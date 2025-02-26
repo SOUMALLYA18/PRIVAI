@@ -27,6 +27,7 @@ export const registerUser = async (req, res, next) => {
     });
 
     const token = generateToken({ id: user._id });
+    delete user._doc.password;
 
     res.status(201).json({ token, user });
   } catch (error) {
@@ -61,7 +62,7 @@ export const loginuser = async (req, res, next) => {
       sameSite: "strict",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
-
+    delete user._doc.password;
     res.status(200).json({ token, user });
   } catch (error) {
     res.status(500).json({ error: error.message });
