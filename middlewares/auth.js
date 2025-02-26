@@ -1,4 +1,5 @@
 import { verifyToken } from "../utils/jwt.js";
+import redisClient from "../services/redisService.js";
 
 export const authUser = async (req, res, next) => {
   try {
@@ -10,7 +11,11 @@ export const authUser = async (req, res, next) => {
         .status(401)
         .json({ error: "Unauthorized - No token provided" });
     }
-
+    const isBlacklisted = await redisClient.get(token);
+    if (isBlacklisted) {
+      res.cookie("token", "");
+      return res.status(401).json({ error: "Unauthorized user" });
+    }
     let user;
     try {
       user = verifyToken(token);
@@ -25,8 +30,7 @@ export const authUser = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
-    return res
-      .status(401)
-      .json({ error: "Unauthorized - Authentication failed" });
+    res.status(500).json({ error: error.message });
+    next(error);
   }
 };
