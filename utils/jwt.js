@@ -8,8 +8,11 @@ export const generateToken = (user) => {
 
 export const verifyToken = (token) => {
   try {
-    return jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("Verified Token:", decoded);
+    return decoded;
   } catch (error) {
+    console.error("Token Verification Failed:", error.message);
     return null;
   }
 };

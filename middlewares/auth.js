@@ -11,26 +11,22 @@ export const authUser = async (req, res, next) => {
         .status(401)
         .json({ error: "Unauthorized - No token provided" });
     }
+
     const isBlacklisted = await redisClient.get(token);
     if (isBlacklisted) {
       res.cookie("token", "");
       return res.status(401).json({ error: "Unauthorized user" });
     }
-    let user;
-    try {
-      user = verifyToken(token);
-    } catch (err) {
+
+    const decoded = verifyToken(token);
+    if (!decoded) {
       return res.status(401).json({ error: "Unauthorized - Invalid token" });
     }
 
-    if (!user) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
+    req.user = decoded;
 
-    req.user = user;
     next();
   } catch (error) {
     res.status(500).json({ error: error.message });
-    next(error);
   }
 };
