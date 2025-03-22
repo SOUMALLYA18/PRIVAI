@@ -8,12 +8,31 @@ export const createUser = async ({ firstName, lastName, email, password }) => {
 
   const hashedPassword = await hashPassword(password);
 
-  const user = new userModel({
+  const user = await userModel.create({
     firstName,
     lastName,
     email,
     password: hashedPassword,
   });
 
-  return user.save();
+  return await user.save();
+};
+
+export const fetchAllUsers = async ({ userId }) => {
+  if (!userId) {
+    throw new Error("User ID is required to fetch users");
+  }
+
+  try {
+    const users = await userModel.find();
+
+    if (users.length === 0) {
+      console.error("❌ No users found in DB");
+    }
+
+    return users;
+  } catch (error) {
+    console.error("❌ Error fetching users:", error.message);
+    throw new Error("Failed to fetch users");
+  }
 };
